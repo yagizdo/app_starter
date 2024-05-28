@@ -163,16 +163,6 @@ class CommandRunner {
         path.join(workingDirectoryPath, appModel.name!, 'test'),
       );
 
-      _copyPasteDirectory(
-        path.join(workingDirectoryPath, 'temp', 'assets'),
-        path.join(workingDirectoryPath, appModel.name!, 'assets'),
-      );
-
-      _copyPasteDirectory(
-        path.join(workingDirectoryPath, 'temp', 'scripts'),
-        path.join(workingDirectoryPath, appModel.name!, 'scripts'),
-      );
-
       await _copyPasteFileContent(
         path.join(workingDirectoryPath, 'temp', 'pubspec.yaml'),
         path.join(workingDirectoryPath, appModel.name!, 'pubspec.yaml'),
@@ -202,18 +192,6 @@ class CommandRunner {
 
       await _changeAllInDirectory(
         path.join(workingDirectoryPath, appModel.name!, 'test'),
-        templatePackageName,
-        appModel.name!,
-      );
-
-      await _changeAllInDirectory(
-        path.join(workingDirectoryPath, appModel.name!, 'assets'),
-        templatePackageName,
-        appModel.name!,
-      );
-
-      await _changeAllInDirectory(
-        path.join(workingDirectoryPath, appModel.name!, 'scripts'),
         templatePackageName,
         appModel.name!,
       );
