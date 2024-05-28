@@ -218,17 +218,19 @@ class CommandRunner {
         appModel.name!,
       );
 
-      for (String customFolder in customFolders) {
-        _copyPasteDirectory(
-          path.join(workingDirectoryPath, 'temp', customFolder),
-          path.join(workingDirectoryPath, appModel.name!, customFolder),
-        );
+      if (customFolders.isNotEmpty) {
+        for (String customFolder in customFolders) {
+          _copyPasteDirectory(
+            path.join(workingDirectoryPath, 'temp', customFolder),
+            path.join(workingDirectoryPath, appModel.name!, customFolder),
+          );
 
-        await _changeAllInDirectory(
-          path.join(workingDirectoryPath, appModel.name!, customFolder),
-          templatePackageName,
-          appModel.name!,
-        );
+          await _changeAllInDirectory(
+            path.join(workingDirectoryPath, appModel.name!, customFolder),
+            templatePackageName,
+            appModel.name!,
+          );
+        }
       }
 
       await Process.run(
