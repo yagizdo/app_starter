@@ -43,6 +43,7 @@ Here are the list of arguments you could use :
 | template       |      t       | the git repository of your template                                  | https://github.com/ThomasEcalle/flappy_template |
 | custom-files   |      i       | custom file paths to be included n the template (comma-seperated)    | custom_file.dart,custom_file_two.dart           |
 | custom-folders |      f       | custom folder paths to be included in the template (comma-seperated) | assets,scripts                                  |
+| platforms      |      p       | platforms to be included in the Flutter project (comma-separated)    | android,ios,web,macos,linux,windows             |
 | config         |      c       | shows values stored in configuration file                            | --config                                        |
 | save           |      s       | save values in configuration file                                    | --save                                          |
 | help           |      h       | shows help                                                           | --help                                          |
