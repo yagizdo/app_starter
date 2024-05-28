@@ -1,6 +1,8 @@
-import 'package:example/app.dart';
-import 'package:example/core/core.dart';
 import 'package:flutter/cupertino.dart';
+
+import 'app.dart';
+import 'core/config/config_manager.dart';
+import 'core/config/flavor.dart';
 
 void main() {
   runApp(ConfigManager(

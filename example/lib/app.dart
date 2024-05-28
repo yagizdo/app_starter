@@ -1,5 +1,6 @@
-import 'package:example/template_home.dart';
 import 'package:flutter/material.dart';
+
+import 'template_home.dart';
 
 class App extends StatelessWidget {
   @override

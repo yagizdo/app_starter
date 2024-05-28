@@ -1,5 +1,6 @@
-import 'package:example/core/core.dart';
 import 'package:flutter/material.dart';
+
+import 'core/config/config_manager.dart';
 
 class TemplateHome extends StatelessWidget {
   @override
@@ -10,7 +11,7 @@ class TemplateHome extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text("Hello from Flappy Template"),
-            Text(ConfigManager.of(context).apiBaseUrl),
+            Text(ConfigManager.of(context)?.apiBaseUrl ?? "No API Base URL"),
           ],
         ),
       ),
