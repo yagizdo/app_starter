@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:app_starter/src/logger.dart';
 import 'package:args/args.dart';
+import 'package:path/path.dart' as path;
 import 'package:yaml/yaml.dart';
 
 import 'models/app_model.dart';
@@ -9,7 +10,7 @@ import 'models/app_model.dart';
 /// Base app_starter class to launch app creation
 class CommandRunner {
   /// Method called on app creation
-  void create(List<String> args) async {
+  Future<void> create(List<String> args) async {
     final ArgParser parser = ArgParser()
       ..addOption(
         "name",
@@ -45,67 +46,68 @@ class CommandRunner {
         defaultsTo: false,
       );
 
-    final results = parser.parse(args);
+    final ArgResults results = parser.parse(args);
 
-    final bool save = results["save"];
-    final bool showConfig = results["config"];
-    final bool showHelp = results["help"];
+    final bool save = results["save"] as bool;
+    final bool showConfig = results["config"] as bool;
+    final bool showHelp = results["help"] as bool;
 
     if (showHelp) {
       _showHelp();
       return;
     }
 
-    final AppModel appModelFomConfig = AppModel.fromConfigFile();
+    final AppModel appModelFromConfig = AppModel.fromConfigFile();
 
     if (showConfig) {
-      Logger.logConfigKeyValue("name", appModelFomConfig.name);
-      Logger.logConfigKeyValue("organization", appModelFomConfig.organization);
+      Logger.logConfigKeyValue("name", appModelFromConfig.name);
+      Logger.logConfigKeyValue("organization", appModelFromConfig.organization);
       Logger.logConfigKeyValue(
-          "template", appModelFomConfig.templateRepository);
+          "template", appModelFromConfig.templateRepository);
 
       return;
     }
 
     final AppModel appModel = AppModel(
-      name: results["name"] ?? appModelFomConfig.name,
-      organization: results["org"] ?? appModelFomConfig.organization,
-      templateRepository:
-          results["template"] ?? appModelFomConfig.templateRepository,
+      name: results["name"] as String? ?? appModelFromConfig.name,
+      organization:
+          results["org"] as String? ?? appModelFromConfig.organization,
+      templateRepository: results["template"] as String? ??
+          appModelFromConfig.templateRepository,
     );
 
-    bool hasOneFiledNull = false;
+    bool hasOneFieldNull = false;
 
     if (appModel.name == null) {
       Logger.logError(
           "Package identifier argument not found, neither in config. --name or -n to add one.");
-      hasOneFiledNull = true;
+      hasOneFieldNull = true;
     }
 
     if (appModel.organization == null) {
       Logger.logError(
           "Organization identifier not found, neither in config. --org or -o to add one.");
-      hasOneFiledNull = true;
+      hasOneFieldNull = true;
     }
 
     if (appModel.templateRepository == null) {
       Logger.logError(
           "Template url not found, neither in config. --template or -t to use one.");
-      hasOneFiledNull = true;
+      hasOneFieldNull = true;
     }
 
     if (!appModel.hasValidPackageName()) {
       Logger.logError("${appModel.name} is not a dart valid package name");
-      hasOneFiledNull = true;
+      hasOneFieldNull = true;
     }
 
-    if (hasOneFiledNull) return;
+    if (hasOneFieldNull) return;
 
     if (save) {
       appModel.writeInConfigFile();
     }
 
-    Logger.logInfo("Let's create ${appModel.name} application !");
+    Logger.logInfo("Let's create ${appModel.name} application!");
 
     final Directory current = Directory.current;
     final String workingDirectoryPath = current.path;
@@ -114,7 +116,7 @@ class CommandRunner {
       Logger.logInfo(
           "Creating flutter project using your current flutter version...");
 
-      Process.runSync(
+      await Process.run(
         "flutter",
         [
           "create",
@@ -123,109 +125,109 @@ class CommandRunner {
           appModel.name!,
         ],
         workingDirectory: workingDirectoryPath,
-        runInShell: true,
       );
 
       Logger.logInfo(
           "Retrieving your template from ${appModel.templateRepository}...");
 
-      Process.runSync(
+      await Process.run(
         "git",
         [
           "clone",
           appModel.templateRepository!,
           "temp",
         ],
-        workingDirectory: "$workingDirectoryPath",
-        runInShell: true,
+        workingDirectory: workingDirectoryPath,
       );
 
       final String content =
-          await File("$workingDirectoryPath/temp/pubspec.yaml").readAsString();
+          await File(path.join(workingDirectoryPath, 'temp', 'pubspec.yaml'))
+              .readAsString();
       final mapData = loadYaml(content);
       final String templatePackageName = mapData["name"];
 
       _copyPasteDirectory(
-        "$workingDirectoryPath/temp/lib",
-        "$workingDirectoryPath/${appModel.name}/lib",
+        path.join(workingDirectoryPath, 'temp', 'lib'),
+        path.join(workingDirectoryPath, appModel.name!, 'lib'),
       );
 
       _copyPasteDirectory(
-        "$workingDirectoryPath/temp/test",
-        "$workingDirectoryPath/${appModel.name}/test",
+        path.join(workingDirectoryPath, 'temp', 'test'),
+        path.join(workingDirectoryPath, appModel.name!, 'test'),
       );
 
       _copyPasteDirectory(
-        "$workingDirectoryPath/temp/assets",
-        "$workingDirectoryPath/${appModel.name}/assets",
+        path.join(workingDirectoryPath, 'temp', 'assets'),
+        path.join(workingDirectoryPath, appModel.name!, 'assets'),
       );
 
       await _copyPasteFileContent(
-        "$workingDirectoryPath/temp/pubspec.yaml",
-        "$workingDirectoryPath/${appModel.name}/pubspec.yaml",
+        path.join(workingDirectoryPath, 'temp', 'pubspec.yaml'),
+        path.join(workingDirectoryPath, appModel.name!, 'pubspec.yaml'),
+      );
+
+      await _copyPasteFileContent(
+        path.join(workingDirectoryPath, 'temp', '.gitignore'),
+        path.join(workingDirectoryPath, appModel.name!, '.gitignore'),
+      );
+
+      await _copyPasteFileContent(
+        path.join(workingDirectoryPath, 'temp', 'generate_app.sh'),
+        path.join(workingDirectoryPath, appModel.name!, 'generate_app.sh'),
       );
 
       await _changeAllInFile(
-        "$workingDirectoryPath/${appModel.name}/pubspec.yaml",
+        path.join(workingDirectoryPath, appModel.name!, 'pubspec.yaml'),
         templatePackageName,
         appModel.name!,
       );
 
       await _changeAllInDirectory(
-        "$workingDirectoryPath/${appModel.name}/lib",
+        path.join(workingDirectoryPath, appModel.name!, 'lib'),
         templatePackageName,
         appModel.name!,
       );
 
       await _changeAllInDirectory(
-        "$workingDirectoryPath/${appModel.name}/test",
+        path.join(workingDirectoryPath, appModel.name!, 'test'),
         templatePackageName,
         appModel.name!,
       );
 
       await _changeAllInDirectory(
-        "$workingDirectoryPath/${appModel.name}/assets",
+        path.join(workingDirectoryPath, appModel.name!, 'assets'),
         templatePackageName,
         appModel.name!,
       );
 
-      Process.runSync(
+      await _changeAllInDirectory(
+        path.join(workingDirectoryPath, appModel.name!, 'scripts'),
+        templatePackageName,
+        appModel.name!,
+      );
+
+      await Process.run(
         "flutter",
         [
           "pub",
           "get",
         ],
-        workingDirectory: "$workingDirectoryPath/${appModel.name}",
+        workingDirectory: path.join(workingDirectoryPath, appModel.name!),
       );
 
       Logger.logInfo("Deleting temp files used for generation...");
 
-      Process.runSync(
-        "rm",
-        [
-          "-rf",
-          "$workingDirectoryPath/temp",
-        ],
-      );
+      await Directory(path.join(workingDirectoryPath, 'temp'))
+          .delete(recursive: true);
 
-      Logger.logInfo("You are good to go ! :)", lineBreak: true);
+      Logger.logInfo("You are good to go! :)", lineBreak: true);
     } catch (error) {
-      Logger.logError("Error creating project : $error");
+      Logger.logError("Error creating project: $error");
 
-      Process.runSync(
-        "rm",
-        [
-          "-rf",
-          "$workingDirectoryPath/${appModel.name}",
-        ],
-      );
-      Process.runSync(
-        "rm",
-        [
-          "-rf",
-          "$workingDirectoryPath/temp",
-        ],
-      );
+      await Directory(path.join(workingDirectoryPath, appModel.name!))
+          .delete(recursive: true);
+      await Directory(path.join(workingDirectoryPath, 'temp'))
+          .delete(recursive: true);
     }
   }
 
@@ -236,41 +238,47 @@ class CommandRunner {
       final File sourceFile = File(sourceFilePath);
       final File targetFile = File(targetFilePath);
 
-      final String sourceContent = sourceFile.readAsStringSync();
-      targetFile.writeAsStringSync(sourceContent);
+      final String sourceContent = await sourceFile.readAsString();
+      await targetFile.writeAsString(sourceContent);
     } catch (error) {
-      Logger.logError("Error copying file contents : $error");
+      Logger.logError("Error copying file contents: $error");
     }
   }
 
   /// Copy all the content of [sourceDirPath] and paste it in [targetDirPath]
-  void _copyPasteDirectory(
-    String sourceDirPath,
-    String targetDirPath,
-  ) {
-    Process.runSync(
-      "rm",
-      [
-        "-rf",
-        targetDirPath,
-      ],
-    );
+  void _copyPasteDirectory(String sourceDirPath, String targetDirPath) {
+    final Directory sourceDir = Directory(sourceDirPath);
+    final Directory targetDir = Directory(targetDirPath);
 
-    Process.runSync(
-      "cp",
-      [
-        "-r",
-        sourceDirPath,
-        targetDirPath,
-      ],
-    );
+    if (!sourceDir.existsSync()) {
+      Logger.logWarning("Source directory does not exist: $sourceDirPath");
+      return;
+    }
+
+    if (targetDir.existsSync()) {
+      targetDir.deleteSync(recursive: true);
+    }
+
+    targetDir.createSync(recursive: true);
+
+    for (var entity in sourceDir.listSync(recursive: true)) {
+      if (entity is Directory) {
+        final newDirectory = Directory(path.join(
+            targetDir.path, path.relative(entity.path, from: sourceDir.path)));
+        newDirectory.createSync(recursive: true);
+      } else if (entity is File) {
+        final newFile = File(path.join(
+            targetDir.path, path.relative(entity.path, from: sourceDir.path)));
+        newFile.writeAsBytesSync(entity.readAsBytesSync());
+      }
+    }
   }
 
   /// Update recursively all imports in [directoryPath] from [oldPackageName] to [newPackageName]
   Future<void> _changeAllInDirectory(String directoryPath,
       String oldPackageName, String newPackageName) async {
     final Directory directory = Directory(directoryPath);
-    final String dirName = directoryPath.split("/").last;
+    final String dirName = path.basename(directoryPath);
     if (directory.existsSync()) {
       final List<FileSystemEntity> files = directory.listSync(recursive: true);
       await Future.forEach(
@@ -295,13 +303,13 @@ class CommandRunner {
       String filePath, String oldValue, String newValue) async {
     try {
       final File file = File(filePath);
-      final String content = file.readAsStringSync();
+      final String content = await file.readAsString();
       if (content.contains(oldValue)) {
         final String newContent = content.replaceAll(oldValue, newValue);
-        file.writeAsStringSync(newContent);
+        await file.writeAsString(newContent);
       }
     } catch (error) {
-      Logger.logError("Error updating file $filePath : $error");
+      Logger.logError("Error updating file $filePath: $error");
     }
   }
 
