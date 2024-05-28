@@ -161,6 +161,11 @@ class CommandRunner {
         path.join(workingDirectoryPath, appModel.name!, 'assets'),
       );
 
+      _copyPasteDirectory(
+        path.join(workingDirectoryPath, 'temp', 'scripts'),
+        path.join(workingDirectoryPath, appModel.name!, 'scripts'),
+      );
+
       await _copyPasteFileContent(
         path.join(workingDirectoryPath, 'temp', 'pubspec.yaml'),
         path.join(workingDirectoryPath, appModel.name!, 'pubspec.yaml'),
