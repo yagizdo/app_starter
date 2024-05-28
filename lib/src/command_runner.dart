@@ -69,7 +69,7 @@ class CommandRunner {
     final List<String> customFolders =
         results["custom-folders"] as List<String>;
     final List<String> customFiles = results["custom-files"] as List<String>;
-    final List<String> platforms = results["platforms"] as List<String>;
+    List<String> platforms = results["platforms"] as List<String>;
 
     if (showHelp) {
       _showHelp();
@@ -130,6 +130,16 @@ class CommandRunner {
 
     final Directory current = Directory.current;
     final String workingDirectoryPath = current.path;
+
+    // Ensure Android and iOS are included if any other platforms are specified
+    if (platforms.isNotEmpty &&
+        (platforms.contains("web") ||
+            platforms.contains("macos") ||
+            platforms.contains("linux") ||
+            platforms.contains("windows"))) {
+      if (!platforms.contains("android")) platforms.add("android");
+      if (!platforms.contains("ios")) platforms.add("ios");
+    }
 
     try {
       Logger.logInfo(
@@ -375,7 +385,7 @@ org            ->  indicates the organization identifier (ex: io.example)
 template       ->  indicates the template repository (ex: https://github.com/ThomasEcalle/flappy_template)
 custom-folders ->  indicates custom folder paths to be included in the template (ex: assets,scripts)
 custom-files   ->  indicates custom file paths to be included in the template (ex: custom_file.dart,custom_file_two.dart)
-platforms      ->  indicates the platforms to be included in the Flutter project (ex: android,ios,web)
+platforms      ->  indicates the platforms to be included in the Flutter project (ex: android,ios,web,macos,linux,windows)
 
 * Store default information for future usages:
 
