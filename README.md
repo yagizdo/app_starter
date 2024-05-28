@@ -36,14 +36,16 @@ app_starter --help
 
 Here are the list of arguments you could use :
 
-|   key    | abbreviation |                 description               |                      example                    |        
-|   :---   |    :---:     |                   :---                    |                      :---                       |        
-|   name   |      n       |           the dart package identifier     |                      example                    |        
-|   org    |      o       |           the organisation identifier     |                     com.example                 |        
-| template |      t       |    the git repository of your template    | https://github.com/ThomasEcalle/flappy_template |    
-|  config  |      c       | shows values stored in configuration file |                     --config                    |  
-|   save   |      s       |     save values in configuration file     |                     --save                      |  
-|   help   |      h       |                 shows help                |                     --help                      |  
+| key            | abbreviation | description                                                          | example                                         |
+| :------------- | :----------: | :------------------------------------------------------------------- | :---------------------------------------------- |
+| name           |      n       | the dart package identifier                                          | example                                         |
+| org            |      o       | the organisation identifier                                          | com.example                                     |
+| template       |      t       | the git repository of your template                                  | https://github.com/ThomasEcalle/flappy_template |
+| custom-files   |      i       | custom file paths to be included n the template (comma-seperated)    | custom_file.dart,custom_file_two.dart           |
+| custom-folders |      f       | custom folder paths to be included in the template (comma-seperated) | assets,scripts                                  |
+| config         |      c       | shows values stored in configuration file                            | --config                                        |
+| save           |      s       | save values in configuration file                                    | --save                                          |
+| help           |      h       | shows help                                                           | --help                                          |
    
         
  ## How does it works ? 
@@ -52,7 +54,7 @@ Here are the list of arguments you could use :
   
 2. It will get your model repository and **clone** it.  
    
-3. Then, it will ***copy and paste*** the  `lib` and `test` folders, as well as the `pubspec.yaml` file from your model repository to your new app.  
+3. Then, it will ***copy and paste*** the  `lib`, `test` and `assets` folders, as well as the `pubspec.yaml` and `.gitignore` file from your model repository to your new app.  
    
 4. Fourth step: it will **change all imports** in these directories (and in pubspec.yaml) in order to put the right new dart package identifier.  
   
@@ -62,7 +64,7 @@ Here are the list of arguments you could use :
       
             
 ## Motivation        
- As a Flutter developper, you may have to create new apps very often.        
+ As a Flutter developer, you may have to create new apps very often.        
 Each time you create an application, you usually have to do the same things:        
         
  - create the app with the right name and organization        
