@@ -32,6 +32,11 @@ class CommandRunner {
         abbr: "f",
         defaultsTo: [],
       )
+      ..addMultiOption(
+        "custom-files",
+        abbr: "i",
+        defaultsTo: [],
+      )
       ..addFlag(
         "config",
         abbr: "c",
@@ -58,6 +63,7 @@ class CommandRunner {
     final bool showHelp = results["help"] as bool;
     final List<String> customFolders =
         results["custom-folders"] as List<String>;
+    final List<String> customFiles = results["custom-files"] as List<String>;
 
     if (showHelp) {
       _showHelp();
@@ -163,6 +169,11 @@ class CommandRunner {
         path.join(workingDirectoryPath, appModel.name!, 'test'),
       );
 
+      _copyPasteDirectory(
+        path.join(workingDirectoryPath, 'temp', 'assets'),
+        path.join(workingDirectoryPath, appModel.name!, 'assets'),
+      );
+
       await _copyPasteFileContent(
         path.join(workingDirectoryPath, 'temp', 'pubspec.yaml'),
         path.join(workingDirectoryPath, appModel.name!, 'pubspec.yaml'),
@@ -171,11 +182,6 @@ class CommandRunner {
       await _copyPasteFileContent(
         path.join(workingDirectoryPath, 'temp', '.gitignore'),
         path.join(workingDirectoryPath, appModel.name!, '.gitignore'),
-      );
-
-      await _copyPasteFileContent(
-        path.join(workingDirectoryPath, 'temp', 'generate_app.sh'),
-        path.join(workingDirectoryPath, appModel.name!, 'generate_app.sh'),
       );
 
       await _changeAllInFile(
@@ -205,6 +211,21 @@ class CommandRunner {
 
           await _changeAllInDirectory(
             path.join(workingDirectoryPath, appModel.name!, customFolder),
+            templatePackageName,
+            appModel.name!,
+          );
+        }
+      }
+
+      if (customFiles.isNotEmpty) {
+        for (String customFile in customFiles) {
+          await _copyPasteFileContent(
+            path.join(workingDirectoryPath, 'temp', customFile),
+            path.join(workingDirectoryPath, appModel.name!, customFile),
+          );
+
+          await _changeAllInFile(
+            path.join(workingDirectoryPath, appModel.name!, customFile),
             templatePackageName,
             appModel.name!,
           );
@@ -322,27 +343,29 @@ class CommandRunner {
   void _showHelp() {
     print("""
     
-usage: app_starter [--save] [--name <name>] [--org <org>] [--template <template>] [--custom-folders <folder1,folder2,...>] [--config]
+usage: app_starter [--save] [--name <name>] [--org <org>] [--template <template>] [--custom-folders <folder1,folder2,...>] [--custom-files <file1,file2,...>] [--config]
 
 * Abbreviations:
 
---name      |  -n
---org       |  -o
---template  |  -t
---custom-folders |  -f
---save      |  -s
---config    |  -c
+--name          |  -n
+--org           |  -o
+--template      |  -t
+--custom-folders|  -f
+--custom-files  |  -i
+--save          |  -s
+--config        |  -c
 
 * Add information about the app and the template:
   
-name       ->       indicates the package identifier (ex: toto)
-org        ->       indicates the organization identifier (ex: io.example)
-template   ->       indicates the template repository (ex: https://github.com/ThomasEcalle/flappy_template)
-custom-folders ->    indicates custom folder paths to be included in the template (ex: assets,scripts)
+name           ->  indicates the package identifier (ex: toto)
+org            ->  indicates the organization identifier (ex: io.example)
+template       ->  indicates the template repository (ex: https://github.com/ThomasEcalle/flappy_template)
+custom-folders ->  indicates custom folder paths to be included in the template (ex: assets,scripts)
+custom-files   ->  indicates custom file paths to be included in the template (ex: custom_file.dart,custom_file_two.dart)
 
 * Store default information for future usages:
 
-save       ->       save information in config file in order to have default configuration values
+save           ->  save information in config file in order to have default configuration values
 
 For example, running : app_starter --save -n toto -o io.example -t https://github.com/ThomasEcalle/flappy_template
 
@@ -350,7 +373,7 @@ This will store these information in configuration file.
 That way, next time, you could for example just run : app_starter -n myapp
 Organization and Template values would be taken from config.
 
-config     ->      shows values stored in configuration file
+config         ->  shows values stored in configuration file
     """);
   }
 }
