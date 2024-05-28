@@ -27,6 +27,11 @@ class CommandRunner {
         abbr: "o",
         defaultsTo: null,
       )
+      ..addOption(
+        "custom-folder",
+        abbr: "f",
+        defaultsTo: null,
+      )
       ..addFlag(
         "config",
         abbr: "c",
@@ -51,6 +56,7 @@ class CommandRunner {
     final bool save = results["save"] as bool;
     final bool showConfig = results["config"] as bool;
     final bool showHelp = results["help"] as bool;
+    final String? customFolderPath = results["custom-folder"] as String?;
 
     if (showHelp) {
       _showHelp();
@@ -161,10 +167,10 @@ class CommandRunner {
         path.join(workingDirectoryPath, appModel.name!, 'assets'),
       );
 
-      _copyPasteDirectory(
-        path.join(workingDirectoryPath, 'temp', 'scripts'),
-        path.join(workingDirectoryPath, appModel.name!, 'scripts'),
-      );
+      // _copyPasteDirectory(
+      //   path.join(workingDirectoryPath, 'temp', 'scripts'),
+      //   path.join(workingDirectoryPath, appModel.name!, 'scripts'),
+      // );
 
       await _copyPasteFileContent(
         path.join(workingDirectoryPath, 'temp', 'pubspec.yaml'),
@@ -205,11 +211,24 @@ class CommandRunner {
         appModel.name!,
       );
 
-      await _changeAllInDirectory(
-        path.join(workingDirectoryPath, appModel.name!, 'scripts'),
-        templatePackageName,
-        appModel.name!,
-      );
+      // await _changeAllInDirectory(
+      //   path.join(workingDirectoryPath, appModel.name!, 'scripts'),
+      //   templatePackageName,
+      //   appModel.name!,
+      // );
+
+      if (customFolderPath != null) {
+        _copyPasteDirectory(
+          path.join(workingDirectoryPath, 'temp', customFolderPath),
+          path.join(workingDirectoryPath, appModel.name!, customFolderPath),
+        );
+
+        await _changeAllInDirectory(
+          path.join(workingDirectoryPath, appModel.name!, customFolderPath),
+          templatePackageName,
+          appModel.name!,
+        );
+      }
 
       await Process.run(
         "flutter",
@@ -322,13 +341,14 @@ class CommandRunner {
   void _showHelp() {
     print("""
     
-usage: app_starter [--save] [--name <name>] [--org <org>] [--template <template>] [--config]
+usage: app_starter [--save] [--name <name>] [--org <org>] [--template <template>] [--custom-folder <folder>] [--config]
 
 * Abbreviations:
 
 --name      |  -n
 --org       |  -o
 --template  |  -t
+--custom-folder |  -f
 --save      |  -s
 --config    |  -c
 
@@ -337,6 +357,7 @@ usage: app_starter [--save] [--name <name>] [--org <org>] [--template <template>
 name       ->       indicates the package identifier (ex: toto)
 org        ->       indicates the organization identifier (ex: io.example)
 template   ->       indicates the template repository (ex: https://github.com/ThomasEcalle/flappy_template)
+custom-folder ->    indicates a custom folder path to be included in the template (ex: custom_dir)
 
 * Store default information for future usages:
 
