@@ -155,6 +155,11 @@ class CommandRunner {
         "$workingDirectoryPath/${appModel.name}/test",
       );
 
+      _copyPasteDirectory(
+        "$workingDirectoryPath/temp/assets",
+        "$workingDirectoryPath/${appModel.name}/assets",
+      );
+
       await _copyPasteFileContent(
         "$workingDirectoryPath/temp/pubspec.yaml",
         "$workingDirectoryPath/${appModel.name}/pubspec.yaml",
@@ -174,6 +179,12 @@ class CommandRunner {
 
       await _changeAllInDirectory(
         "$workingDirectoryPath/${appModel.name}/test",
+        templatePackageName,
+        appModel.name!,
+      );
+
+      await _changeAllInDirectory(
+        "$workingDirectoryPath/${appModel.name}/assets",
         templatePackageName,
         appModel.name!,
       );
